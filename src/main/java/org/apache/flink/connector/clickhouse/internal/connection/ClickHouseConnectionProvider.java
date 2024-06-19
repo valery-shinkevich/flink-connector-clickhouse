@@ -110,6 +110,7 @@ public class ClickHouseConnectionProvider implements Serializable {
     private ClickHouseConnection createConnection(String url, String database) throws SQLException {
         LOG.info("connecting to {}, database {}", url, database);
         Properties configuration = new Properties();
+        configuration.putAll(connectionProperties);
         if (options.getUsername().isPresent()) {
             configuration.setProperty(
                     ClickHouseDefaults.USER.getKey(), options.getUsername().get());

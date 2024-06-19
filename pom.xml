@@ -184,45 +184,45 @@
 									<include>org.apache.httpcomponents.core5:httpcore5</include>
 									<include>org.apache.httpcomponents.core5:httpcore5-h2</include>
 								</includes>
-								<excludes>
-									<!-- These jars must exist on the server side -->
-									<exclude>log4j:*</exclude>
-									<exclude>org.slf4j:*</exclude>
-									<exclude>com.google.code.findbugs:jsr305</exclude>
-								</excludes>
+<!--								<excludes>-->
+<!--									&lt;!&ndash; These jars must exist on the server side &ndash;&gt;-->
+<!--									<exclude>log4j:*</exclude>-->
+<!--									<exclude>org.slf4j:*</exclude>-->
+<!--									<exclude>com.google.code.findbugs:jsr305</exclude>-->
+<!--								</excludes>-->
 							</artifactSet>
-							<relocations>
+<!--							<relocations>-->
+<!--&lt;!&ndash;								<relocation>&ndash;&gt;-->
+<!--&lt;!&ndash;									<pattern>com.clickhouse</pattern>&ndash;&gt;-->
+<!--&lt;!&ndash;									<shadedPattern>${shade.base}.com.clickhouse</shadedPattern>&ndash;&gt;-->
+<!--&lt;!&ndash;								</relocation>&ndash;&gt;-->
 <!--								<relocation>-->
-<!--									<pattern>com.clickhouse</pattern>-->
-<!--									<shadedPattern>${shade.base}.com.clickhouse</shadedPattern>-->
+<!--									<pattern>com.fasterxml</pattern>-->
+<!--									<shadedPattern>${shade.base}.com.fasterxml</shadedPattern>-->
 <!--								</relocation>-->
-								<relocation>
-									<pattern>com.fasterxml</pattern>
-									<shadedPattern>${shade.base}.com.fasterxml</shadedPattern>
-								</relocation>
-								<relocation>
-									<pattern>org.apache.commons</pattern>
-									<shadedPattern>${shade.base}.org.apache.commons</shadedPattern>
-								</relocation>
-								<relocation>
-									<pattern>org.apache.http</pattern>
-									<shadedPattern>${shade.base}.org.apache.http</shadedPattern>
-								</relocation>
-								<relocation>
-									<pattern>net.jpountz</pattern>
-									<shadedPattern>${shade.base}.net.jpountz</shadedPattern>
-								</relocation>
-							</relocations>
-							<filters>
-								<filter>
-									<artifact>*:*</artifact>
-									<excludes>
-										<exclude>META-INF/*.SF</exclude>
-										<exclude>META-INF/*.DSA</exclude>
-										<exclude>META-INF/*.RSA</exclude>
-									</excludes>
-								</filter>
-							</filters>
+<!--								<relocation>-->
+<!--									<pattern>org.apache.commons</pattern>-->
+<!--									<shadedPattern>${shade.base}.org.apache.commons</shadedPattern>-->
+<!--								</relocation>-->
+<!--								<relocation>-->
+<!--									<pattern>org.apache.http</pattern>-->
+<!--									<shadedPattern>${shade.base}.org.apache.http</shadedPattern>-->
+<!--								</relocation>-->
+<!--								<relocation>-->
+<!--									<pattern>net.jpountz</pattern>-->
+<!--									<shadedPattern>${shade.base}.net.jpountz</shadedPattern>-->
+<!--								</relocation>-->
+<!--							</relocations>-->
+<!--							<filters>-->
+<!--								<filter>-->
+<!--									<artifact>*:*</artifact>-->
+<!--									<excludes>-->
+<!--										<exclude>META-INF/*.SF</exclude>-->
+<!--										<exclude>META-INF/*.DSA</exclude>-->
+<!--										<exclude>META-INF/*.RSA</exclude>-->
+<!--									</excludes>-->
+<!--								</filter>-->
+<!--							</filters>-->
 							<transformers>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
