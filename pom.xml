@@ -7,7 +7,7 @@
 
 	<groupId>org.apache.flink</groupId>
 	<artifactId>flink-connector-clickhouse</artifactId>
-	<version>1.16.0-SNAPSHOT</version>
+	<version>1.16.0</version>
 
 	<name>flink-connector-clickhouse</name>
 	<url>http://www.example.com</url>
@@ -35,7 +35,7 @@
 
 		<checkstyle.version>8.14</checkstyle.version>
 		<junit.version>4.13.2</junit.version>
-		<clickhouse-jdbc.version>0.3.1</clickhouse-jdbc.version>
+		<clickhouse-jdbc.version>0.6.1</clickhouse-jdbc.version>
 		<scala.binary.version>2.12</scala.binary.version>
 		<flink.version>1.16.0</flink.version>
 		<flink.scope>provided</flink.scope>
@@ -59,25 +59,22 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>ru.yandex.clickhouse</groupId>
+			<groupId>com.clickhouse</groupId>
 			<artifactId>clickhouse-jdbc</artifactId>
 			<version>${clickhouse-jdbc.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-core</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-databind</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 			<version>${jackson.version}</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.apache.httpcomponents.client5</groupId>
+			<artifactId>httpclient5</artifactId>
+			<version>5.2.1</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
@@ -181,6 +178,12 @@
 						<configuration>
 							<shadeTestJar>false</shadeTestJar>
 							<artifactSet>
+								<includes>
+									<include>com.clickhouse:clickhouse-jdbc</include>
+									<include>org.apache.httpcomponents.client5:httpclient5</include>
+									<include>org.apache.httpcomponents.core5:httpcore5</include>
+									<include>org.apache.httpcomponents.core5:httpcore5-h2</include>
+								</includes>
 								<excludes>
 									<!-- These jars must exist on the server side -->
 									<exclude>log4j:*</exclude>
@@ -189,10 +192,10 @@
 								</excludes>
 							</artifactSet>
 							<relocations>
-								<relocation>
-									<pattern>ru.yandex.clickhouse</pattern>
-									<shadedPattern>${shade.base}.ru.yandex.clickhouse</shadedPattern>
-								</relocation>
+<!--								<relocation>-->
+<!--									<pattern>com.clickhouse</pattern>-->
+<!--									<shadedPattern>${shade.base}.com.clickhouse</shadedPattern>-->
+<!--								</relocation>-->
 								<relocation>
 									<pattern>com.fasterxml</pattern>
 									<shadedPattern>${shade.base}.com.fasterxml</shadedPattern>
