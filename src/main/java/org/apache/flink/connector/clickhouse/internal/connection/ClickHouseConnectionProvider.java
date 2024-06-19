@@ -7,6 +7,7 @@ import org.apache.flink.connector.clickhouse.internal.schema.ShardSpec;
 import com.clickhouse.client.config.ClickHouseDefaults;
 import com.clickhouse.jdbc.ClickHouseConnection;
 import com.clickhouse.jdbc.ClickHouseDriver;
+import com.clickhouse.jdbc.internal.ClickHouseJdbcUrlParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,6 +109,9 @@ public class ClickHouseConnectionProvider implements Serializable {
     }
 
     private ClickHouseConnection createConnection(String url, String database) throws SQLException {
+        if (url.startsWith("clickhouse:") || url.startsWith("ch:")) {
+            url = ClickHouseJdbcUrlParser.JDBC_PREFIX + url;
+        }
         LOG.info("connecting to {}, database {}", url, database);
         Properties configuration = new Properties();
         configuration.putAll(connectionProperties);
