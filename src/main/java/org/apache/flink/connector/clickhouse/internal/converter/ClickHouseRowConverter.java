@@ -1,5 +1,6 @@
 package org.apache.flink.connector.clickhouse.internal.converter;
 
+import org.apache.flink.connector.clickhouse.internal.connection.ClickHouseStatementWrapper;
 import org.apache.flink.table.data.DecimalData;
 import org.apache.flink.table.data.GenericRowData;
 import org.apache.flink.table.data.RowData;
@@ -26,6 +27,7 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.UUID;
 
 import static org.apache.flink.connector.clickhouse.internal.converter.ClickHouseConverterUtils.BOOL_TRUE;
 import static org.apache.flink.connector.clickhouse.util.ClickHouseUtil.toEpochDayOneTimestamp;
@@ -67,7 +69,7 @@ public class ClickHouseRowConverter implements Serializable {
         return genericRowData;
     }
 
-    public void toExternal(RowData rowData, ClickHousePreparedStatement statement)
+    public void toExternal(RowData rowData, ClickHouseStatementWrapper statement)
             throws SQLException {
         for (int index = 0; index < rowData.getArity(); index++) {
             if (!rowData.isNullAt(index)) {
@@ -117,7 +119,10 @@ public class ClickHouseRowConverter implements Serializable {
                 return val -> TimestampData.fromInstant(((Timestamp) val).toInstant());
             case CHAR:
             case VARCHAR:
-                return val -> StringData.fromString((String) val);
+                return val ->
+                        val instanceof UUID
+                                ? StringData.fromString(val.toString())
+                                : StringData.fromString((String) val);
             case ARRAY:
             case MAP:
                 return val -> ClickHouseConverterUtils.toInternal(val, type);
@@ -217,17 +222,17 @@ public class ClickHouseRowConverter implements Serializable {
     @FunctionalInterface
     interface SerializationConverter extends Serializable {
         /**
-         * Convert a internal field to to java object and fill into the {@link
+         * Convert an internal field to java object and fill into the {@link
          * ClickHousePreparedStatement}.
          */
-        void serialize(RowData rowData, int index, ClickHousePreparedStatement statement)
+        void serialize(RowData rowData, int index, ClickHouseStatementWrapper statement)
                 throws SQLException;
     }
 
     @FunctionalInterface
     interface DeserializationConverter extends Serializable {
         /**
-         * Convert a object of {@link ClickHouseResultSet} to the internal data structure object.
+         * Convert an object of {@link ClickHouseResultSet} to the internal data structure object.
          */
         Object deserialize(Object field) throws SQLException;
     }

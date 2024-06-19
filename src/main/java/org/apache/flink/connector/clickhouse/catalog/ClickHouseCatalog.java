@@ -32,7 +32,6 @@ import org.apache.flink.table.catalog.stats.CatalogTableStatistics;
 import org.apache.flink.table.expressions.Expression;
 import org.apache.flink.table.factories.Factory;
 import org.apache.flink.table.types.DataType;
-import org.apache.flink.util.StringUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +60,9 @@ import static org.apache.flink.connector.clickhouse.config.ClickHouseConfig.PASS
 import static org.apache.flink.connector.clickhouse.config.ClickHouseConfig.TABLE_NAME;
 import static org.apache.flink.connector.clickhouse.config.ClickHouseConfig.URL;
 import static org.apache.flink.connector.clickhouse.config.ClickHouseConfig.USERNAME;
+import static org.apache.flink.connector.clickhouse.util.ClickHouseJdbcUtil.getDistributedEngineFull;
 import static org.apache.flink.util.Preconditions.checkArgument;
+import static org.apache.flink.util.StringUtils.isNullOrWhitespaceOnly;
 
 /** ClickHouse catalog. */
 public class ClickHouseCatalog extends AbstractCatalog {
@@ -110,14 +111,11 @@ public class ClickHouseCatalog extends AbstractCatalog {
             Map<String, String> properties) {
         super(catalogName, defaultDatabase == null ? DEFAULT_DATABASE : defaultDatabase);
 
-        checkArgument(
-                !StringUtils.isNullOrWhitespaceOnly(baseUrl), "baseUrl cannot be null or empty");
-        checkArgument(
-                !StringUtils.isNullOrWhitespaceOnly(username), "username cannot be null or empty");
-        checkArgument(
-                !StringUtils.isNullOrWhitespaceOnly(password), "password cannot be null or empty");
+        checkArgument(!isNullOrWhitespaceOnly(baseUrl), "baseUrl cannot be null or empty");
+        checkArgument(!isNullOrWhitespaceOnly(username), "username cannot be null or empty");
+        checkArgument(!isNullOrWhitespaceOnly(password), "password cannot be null or empty");
 
-        this.baseUrl = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
+        this.baseUrl = baseUrl;
         this.username = username;
         this.password = password;
         this.ignorePrimaryKey =
@@ -192,7 +190,7 @@ public class ClickHouseCatalog extends AbstractCatalog {
 
     @Override
     public boolean databaseExists(String databaseName) throws CatalogException {
-        checkArgument(!StringUtils.isNullOrWhitespaceOnly(databaseName));
+        checkArgument(!isNullOrWhitespaceOnly(databaseName));
 
         return listDatabases().contains(databaseName);
     }
@@ -270,7 +268,7 @@ public class ClickHouseCatalog extends AbstractCatalog {
         String tableName = tablePath.getObjectName();
         try {
             DistributedEngineFull engineFullSchema =
-                    ClickHouseUtil.getAndParseDistributedEngineSchema(
+                    getDistributedEngineFull(
                             connection, tablePath.getDatabaseName(), tablePath.getObjectName());
             if (engineFullSchema != null) {
                 databaseName = engineFullSchema.getDatabase();

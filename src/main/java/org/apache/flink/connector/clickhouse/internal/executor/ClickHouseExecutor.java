@@ -3,6 +3,7 @@ package org.apache.flink.connector.clickhouse.internal.executor;
 import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.connector.clickhouse.internal.ClickHouseStatementFactory;
 import org.apache.flink.connector.clickhouse.internal.connection.ClickHouseConnectionProvider;
+import org.apache.flink.connector.clickhouse.internal.connection.ClickHouseStatementWrapper;
 import org.apache.flink.connector.clickhouse.internal.converter.ClickHouseRowConverter;
 import org.apache.flink.connector.clickhouse.internal.options.ClickHouseDmlOptions;
 import org.apache.flink.table.data.GenericRowData;
@@ -14,7 +15,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.yandex.clickhouse.ClickHouseConnection;
-import ru.yandex.clickhouse.ClickHousePreparedStatement;
 
 import java.io.Serializable;
 import java.sql.SQLException;
@@ -41,7 +41,7 @@ public interface ClickHouseExecutor extends Serializable {
 
     void closeStatement();
 
-    default void attemptExecuteBatch(ClickHousePreparedStatement stmt, int maxRetries)
+    default void attemptExecuteBatch(ClickHouseStatementWrapper stmt, int maxRetries)
             throws SQLException {
         for (int i = 0; i <= maxRetries; i++) {
             try {
@@ -106,7 +106,7 @@ public interface ClickHouseExecutor extends Serializable {
             String databaseName,
             String clusterName,
             String[] fieldNames,
-            String[] keyFields,
+            String[] keyFieldNames,
             String[] partitionFields,
             LogicalType[] fieldTypes,
             ClickHouseDmlOptions options) {
@@ -117,26 +117,26 @@ public interface ClickHouseExecutor extends Serializable {
                         databaseName,
                         clusterName,
                         fieldNames,
-                        keyFields,
+                        keyFieldNames,
                         partitionFields);
         String deleteSql =
                 ClickHouseStatementFactory.getDeleteStatement(
-                        tableName, databaseName, clusterName, keyFields);
+                        tableName, databaseName, clusterName, keyFieldNames);
 
         // Re-sort the order of fields to fit the sql statement.
-        int[] delFields =
-                Arrays.stream(keyFields)
+        int[] keyFields =
+                Arrays.stream(keyFieldNames)
                         .mapToInt(pk -> ArrayUtils.indexOf(fieldNames, pk))
                         .toArray();
         int[] updatableFields =
                 IntStream.range(0, fieldNames.length)
-                        .filter(idx -> !ArrayUtils.contains(keyFields, fieldNames[idx]))
+                        .filter(idx -> !ArrayUtils.contains(keyFieldNames, fieldNames[idx]))
                         .filter(idx -> !ArrayUtils.contains(partitionFields, fieldNames[idx]))
                         .toArray();
-        int[] updFields = ArrayUtils.addAll(updatableFields, delFields);
+        int[] updFields = ArrayUtils.addAll(updatableFields, keyFields);
 
-        LogicalType[] delTypes =
-                Arrays.stream(delFields).mapToObj(f -> fieldTypes[f]).toArray(LogicalType[]::new);
+        LogicalType[] keyTypes =
+                Arrays.stream(keyFields).mapToObj(f -> fieldTypes[f]).toArray(LogicalType[]::new);
         LogicalType[] updTypes =
                 Arrays.stream(updFields).mapToObj(f -> fieldTypes[f]).toArray(LogicalType[]::new);
 
@@ -146,9 +146,9 @@ public interface ClickHouseExecutor extends Serializable {
                 deleteSql,
                 new ClickHouseRowConverter(RowType.of(fieldTypes)),
                 new ClickHouseRowConverter(RowType.of(updTypes)),
-                new ClickHouseRowConverter(RowType.of(delTypes)),
+                new ClickHouseRowConverter(RowType.of(keyTypes)),
                 createExtractor(fieldTypes, updFields),
-                createExtractor(fieldTypes, delFields),
+                createExtractor(fieldTypes, keyFields),
                 options);
     }
 
